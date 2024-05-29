@@ -28,10 +28,13 @@ class Weibo:
             os.system(f"cp /tmp/repository/db/weibo.db {db_file_path}")
 
         # Get secrets from environment variables
+        config = configparser.ConfigParser()
+        config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
+        
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
         self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-        self.PROXY = os.environ.get("PROXY")
+        proxy = config.get("CONFIG", "PROXY")
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
