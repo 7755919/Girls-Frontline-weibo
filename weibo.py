@@ -32,7 +32,7 @@ class Weibo:
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
         
         proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
+        self.PROXIES = {"http": proxy, "https": proxy}
 
         
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
@@ -43,7 +43,6 @@ class Weibo:
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
 
-        self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
 
         # Debugging lines to check if environment variables are loaded correctly
         print(f"WEIBO_ID: {self.WEIBO_ID}")
