@@ -14,7 +14,7 @@ class Weibo:
     def plog(self, content):
         print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
 
-    class Weibo:
+
     def __init__(self):
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
