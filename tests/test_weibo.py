@@ -1,14 +1,11 @@
 import sys
 import os
-
-# 将项目根目录添加到Python路径中
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-# 导入需要测试的模块
-from weibo import Weibo
 import unittest
 from unittest.mock import patch, MagicMock
 from weibo import Weibo
+
+# 将项目根目录添加到Python路径中
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 class TestWeibo(unittest.TestCase):
     @patch('weibo.Weibo.SESSION.get')
