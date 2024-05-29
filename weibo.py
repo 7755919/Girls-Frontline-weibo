@@ -194,7 +194,7 @@ class Weibo:
                 break
             self.plog(f'--- 第 {int(elapsed_time)} 秒 ---')
 
-            weibo_ids = self.WEIBO_ID.split(',')
+            weibo_ids = WEIBO_ID.split(',')
             for weibo_id in weibo_ids:
                 self.plog(f'    |-開始獲取 {weibo_id} 的微博')
                 url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
