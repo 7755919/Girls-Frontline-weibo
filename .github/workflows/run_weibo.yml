@@ -1,0 +1,17 @@
+name: Run Weibo Script
+
+on:
+  push:
+    branches:
+      - main  # 触发条件可以根据需要进行修改
+
+jobs:
+  run_weibo_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # 使用 actions/checkout 动作来获取仓库代码
+
+      - name: Run Weibo script
+        run: python weibo.py  # 执行 weibo.py 文件
