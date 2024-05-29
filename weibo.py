@@ -14,6 +14,11 @@ class Weibo:
     def plog(self, content):
         print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
 
+    def Load_conf():
+        WEIBO_ID = os.environ.get("WEIBO_ID")
+        TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+        TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
 
     def __init__(self):
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
@@ -35,10 +40,10 @@ class Weibo:
         PROXIES = {"http": proxy, "https": proxy}
 
         
-        WEIBO_ID = os.environ.get("WEIBO_ID")
-        TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-        TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-        proxy = config.get("CONFIG", "PROXY")
+        #WEIBO_ID = os.environ.get("WEIBO_ID")
+        #TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+        #TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
 
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
