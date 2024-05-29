@@ -11,8 +11,8 @@ from requests_html import HTMLSession
 
 class Weibo:
 
-    def plog(self,content):
-        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())), content))
+    def plog(self, content):
+        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
 
     def __init__(self):
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
@@ -29,7 +29,7 @@ class Weibo:
 
     def send_telegram_message(self, text, weibo_link):
         """
-        給電報發送文字消息
+        給TG發送文字消息
         """
         headers = {
             'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ class Weibo:
 
     def send_telegram_photo(self, img_url):
         """
-        給電報發送圖片
+        給TG發送圖片
         """
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendPhoto'
         data = dict(chat_id=f"{self.TELEGRAM_CHAT_ID}&", photo=img_url)
@@ -62,7 +62,7 @@ class Weibo:
             params['media'].append({'type': 'photo', 'media': pic})
         params['media'] = json.dumps(params['media'])
         result = self.SESSION.post(url, data=params, proxies=self.PROXIES)
-        if result.status_code != 200: # 如果分組發送失敗 則單獨發送圖片
+        if result.status_code != 200:  # 如果分組發送失敗，則單獨發送圖片
             for pic in pics:
                 self.send_telegram_photo(pic)
 
@@ -90,12 +90,12 @@ class Weibo:
             # 把圖片url發送到Telegram中，可以第一時間在Telegram中收到推送
             pics = weibo['pics']
             if len(pics) > 0:
-                if len(pics) <= 2: # 如果配圖小於2張 則一張一張獨立發送
+                if len(pics) <= 2:  # 如果配圖小於2張，則一張一張獨立發送
                     for pic in pics:
                         self.send_telegram_photo(pics)
-                elif len(pics) > 10: # 如果配圖大於10張 則分2組發送
-                    self.send_telegram_photos(pics[0 : int(len(pics)/2)])
-                    self.send_telegram_photos(pics[int(len(pics)/2):])
+                elif len(pics) > 10:  # 如果配圖大於10張，則分2組發送
+                    self.send_telegram_photos(pics[0: int(len(pics) / 2)])
+                    self.send_telegram_photos(pics[int(len(pics) / 2):])
                 else:
                     self.send_telegram_photos(pics)
 
@@ -128,13 +128,13 @@ class Weibo:
 
         print('\n* 正在檢查代理是否配置正確')
         try:
-            status_code = self.SESSION.get('https://www.google.com',proxies=self.PROXIES, timeout=5).status_code
+            status_code = self.SESSION.get('https://www.google.com', proxies=self.PROXIES, timeout=5).status_code
             if status_code == 200:
                 print('【正確】代理配置正確，可正常訪問')
             else:
-                print('【錯誤】代理無法訪問到電報服務器')
+                print('【錯誤】代理無法訪問到TG服務器')
         except:
-            print('【錯誤】代理無法訪問到電報服務器')
+            print('【錯誤】代理無法訪問到TG服務器')
 
     def get_weibo_detail(self, bid):
         url = f'https://m.weibo.cn/statuses/show?id={bid}'
@@ -144,58 +144,66 @@ class Weibo:
         weibo['nickname'] = detail['data']['user']['screen_name']
         weibo_id = detail['data']['user']['id']
         weibo['pics'] = []
-        if 'pics' in detail['data']: # 判斷博文中是否有配圖，如果有配圖則做解析
+        if 'pics' in detail['data']:  # 判斷博文中是否有配圖，如果有配圖則做解析
             weibo['pics'] = [pic['large']['url'] for pic in detail['data']['pics']]
         weibo['link'] = self.get_pc_url(weibo_id, bid)
         self.parse_weibo(weibo)
 
     def get_pc_url(self, weibo_id, bid):
         return 'https://weibo.com/{weibo_id}/{uri}'.format(
-            weibo_id = weibo_id,
-            uri = bid
+            weibo_id=weibo_id,
+            uri=bid
         )
 
     def run(self):
         self.plog('開始運行>>>')
+        start_time = time.time()
+        while True:
+            current_time = time.time()
+            elapsed_time = current_time - start_time
+            if elapsed_time >= 86400:  # 如果已經運行了24小時，則退出循環
+                break
+            self.plog(f'--- 第 {int(elapsed_time)} 秒 ---')
 
-        weibo_ids = self.WEIBO_ID.split(',')
-        for weibo_id in weibo_ids:
-            self.plog(f'    |-開始獲取 {weibo_id} 的微博')
-            url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
+            weibo_ids = self.WEIBO_ID.split(',')
+            for weibo_id in weibo_ids:
+                self.plog(f'    |-開始獲取 {weibo_id} 的微博')
+                url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
 
-            try:
-                weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
-            except:
-                self.plog('    |-訪問url出錯了')
-
-            for item in weibo_items:
-                weibo = {}
                 try:
-                    if item['mblog']['isLongText']: # 如果博文包含全文 則去解析完整微博
-                        self.get_weibo_detail(item['mblog']['bid'])
-                        continue
+                    weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
                 except:
-                    continue
+                    self.plog('    |-訪問url出錯了')
 
-                weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
-                weibo['nickname'] = item['mblog']['user']['screen_name']
-
-                if item['mblog'].get('weibo_position') == 3:  # 如果狀態為3表示轉發微博，附加上轉發鏈，狀態1為原創微博
-                    retweet = item['mblog']['retweeted_status']
+                for item in weibo_items:
+                    weibo = {}
                     try:
-                        weibo['title'] = f"{weibo['title']}//@{retweet['user']['screen_name']}:{retweet['raw_text']}"
+                        if item['mblog']['isLongText']:  # 如果博文包含全文 則去解析完整微博
+                            self.get_weibo_detail(item['mblog']['bid'])
+                            continue
                     except:
-                        weibo['title'] = f"{weibo['title']}//轉發原文不可見，可能已被刪除"
+                        continue
 
-                try:
-                    weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
-                except:
-                    weibo['pics'] = []
+                    weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
+                    weibo['nickname'] = item['mblog']['user']['screen_name']
 
-                weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
+                    if item['mblog'].get('weibo_position') == 3:  # 如果狀態為3表示轉發微博，附加上轉發鏈，狀態1為原創微博
+                        retweet = item['mblog']['retweeted_status']
+                        try:
+                            weibo['title'] = f"{weibo['title']}//@{retweet['user']['screen_name']}:{retweet['raw_text']}"
+                        except:
+                            weibo['title'] = f"{weibo['title']}//轉發原文不可見，可能已被刪除"
 
-                self.parse_weibo(weibo)
-            self.plog(f'    |-獲取結束 {weibo_id} 的微博')
+                    try:
+                        weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
+                    except:
+                        weibo['pics'] = []
+
+                    weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
+
+                    self.parse_weibo(weibo)
+                self.plog(f'    |-獲取結束 {weibo_id} 的微博')
+            time.sleep(1)  # 每秒循環一次
         self.plog('<<<運行結束\n')
 
 
