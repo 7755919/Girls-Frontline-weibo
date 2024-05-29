@@ -26,6 +26,11 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install lxml_html_clean
-      
+
     - name: Run Python Script
-      run: python weibo.py
+      run: python ./weibo.py
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        WEIBO_ID: ${{ secrets.WEIBO_ID }}
+        PROXY: ${{ secrets.PROXY }}
