@@ -26,16 +26,15 @@ class Weibo:
             os.system("git clone https://github.com/7755919/Girls-Frontline-weibo.git /tmp/repository")
             os.makedirs(os.path.dirname(db_file_path), exist_ok=True)
             os.system(f"cp /tmp/repository/db/weibo.db {db_file_path}")
-        config = configparser.ConfigParser()
-        config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
-        self.WEIBO_ID = config.get("CONFIG", "WEIBO_ID")
-        self.TELEGRAM_BOT_TOKEN = config.get("CONFIG", "TELEGRAM_BOT_TOKEN")
-        self.TELEGRAM_CHAT_ID = config.get("CONFIG", "TELEGRAM_CHAT_ID")
+        self.WEIBO_ID = os.environ.get("WEIBO_ID")
+        self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+        self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+        self.PROXY = os.environ.get("PROXY")
         self.SESSION = HTMLSession()
-        self.SESSION.adapters.DEFAULT_RETRIES = 5  # 增加重連次數
-        self.SESSION.keep_alive = False  # 關閉多余連接
-        proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {"http": proxy, "https": proxy}
+        self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
+        self.SESSION.keep_alive = False  # Close additional connections
+
+        self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
 
     def send_telegram_message(self, text, weibo_link):
         """
