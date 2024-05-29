@@ -20,7 +20,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x' # 你想要使用的 Python 版本
+        python-version: '3.9' # 你想要使用的 Python 版本
         
     - name: Install wget
       run: pip install wget
