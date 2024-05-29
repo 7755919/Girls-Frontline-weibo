@@ -20,10 +20,16 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9' # 你想要使用的 Python 版本
+        python-version: '3.9'
         
     - name: Install wget
-      run: pip install wget
+      run: pip install wget==3.2
+      
+    - name: Install requests-html
+      run: pip install requests-html==0.10.0
+      
+    - name: Install BeautifulSoup
+      run: pip install beautifulsoup4==4.8.2
       
     - name: Run Python Script
       run: python weibo.py
