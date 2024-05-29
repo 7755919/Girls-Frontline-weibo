@@ -2,8 +2,12 @@ name: Run Weibo Script
 
 on:
   push:
-    branches:
-      - main  # 触发条件可以根据需要进行修改
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
 
 jobs:
   run_weibo_script:
