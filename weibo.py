@@ -194,6 +194,7 @@ class Weibo:
                 break
             self.plog(f'--- 第 {int(elapsed_time)} 秒 ---')
 
+            WEIBO_ID, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID = Weibo.load_conf()
             weibo_ids = WEIBO_ID.split(',')
             for weibo_id in weibo_ids:
                 self.plog(f'    |-開始獲取 {weibo_id} 的微博')
