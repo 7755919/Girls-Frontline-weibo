@@ -30,22 +30,23 @@ class Weibo:
         # Get secrets from environment variables
         config = configparser.ConfigParser()
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
-        
+
+        proxy = config.get("CONFIG", "PROXY")
+        self.PROXIES = {"http": proxy, "https": proxy}
+
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
         self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-
+        self.PROXY = config.get("CONFIG", "PROXY")
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
-
-
 
         # Debugging lines to check if environment variables are loaded correctly
         print(f"WEIBO_ID: {self.WEIBO_ID}")
         print(f"TELEGRAM_BOT_TOKEN: {self.TELEGRAM_BOT_TOKEN}")
         print(f"TELEGRAM_CHAT_ID: {self.TELEGRAM_CHAT_ID}")
-  
+        print(f"PROXY: {self.PROXY}")
 
     def send_telegram_message(self, text, weibo_link):
         """
@@ -57,6 +58,8 @@ class Weibo:
         data = f'{{"chat_id":"{self.TELEGRAM_CHAT_ID}", "text":"{text}", "reply_markup": {{"inline_keyboard":' \
                f' [[{{"text":"🔗點擊查看原微博", "url":"{weibo_link}"}}]]}}}} '
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendMessage'
+        try:
+            self.SESSION.post(url, headers=headers, data=data.encode('utf-8'), proxies=self.PROXIES)
         except:
             print('    |-網絡代理錯誤，請檢查確認後關閉本程序重試')
             time.sleep(99999)
@@ -68,7 +71,7 @@ class Weibo:
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendPhoto'
         data = dict(chat_id=f"{self.TELEGRAM_CHAT_ID}&", photo=img_url)
 
-
+        self.SESSION.post(url, data=data, proxies=self.PROXIES)
 
     def send_telegram_photos(self, pics):
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendMediaGroup'
@@ -79,7 +82,7 @@ class Weibo:
         for pic in pics:
             params['media'].append({'type': 'photo', 'media': pic})
         params['media'] = json.dumps(params['media'])
-
+        result = self.SESSION.post(url, data=params, proxies=self.PROXIES)
         if result.status_code != 200:  # 如果分組發送失敗，則單獨發送圖片
             for pic in pics:
                 self.send_telegram_photo(pic)
@@ -134,6 +137,25 @@ class Weibo:
             return True
         else:
             return False
+
+    def test(self):
+        print('* 正在檢查微博ID是否配置正確')
+        url = f'https://m.weibo.cn/api/container/getIndex?containerid=100505{self.WEIBO_ID}'
+        try:
+            weibo_name = self.SESSION.get(url).json()['data']['userInfo']['screen_name']
+            print(f'【正確】當前設置的微博賬戶為：@{weibo_name}')
+        except:
+            print('【錯誤】請重新測試或檢查微博數字ID是否正確')
+
+        print('\n* 正在檢查代理是否配置正確')
+        try:
+            status_code = self.SESSION.get('https://www.google.com', proxies=self.PROXIES, timeout=5).status_code
+            if status_code == 200:
+                print('【正確】代理配置正確，可正常訪問')
+            else:
+                print('【錯誤】代理無法訪問到TG服務器')
+        except:
+            print('【錯誤】代理無法訪問到TG服務器')
 
     def get_weibo_detail(self, bid):
         url = f'https://m.weibo.cn/statuses/show?id={bid}'
