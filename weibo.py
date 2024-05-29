@@ -213,7 +213,7 @@ class Weibo:
 
                     self.parse_weibo(weibo)
                 self.plog(f'    |-獲取結束 {weibo_id} 的微博')
-            time.sleep(1)  # 每秒循環一次
+            time.sleep(10)  # 每秒循環一次
         self.plog('<<<運行結束\n')
 
 
