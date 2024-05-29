@@ -34,7 +34,7 @@ class Weibo:
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
         self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-        proxy = config.get("CONFIG", "PROXY")
+        self.PROXY = config.get("CONFIG", "PROXY")
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
