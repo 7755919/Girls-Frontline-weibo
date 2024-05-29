@@ -17,6 +17,15 @@ class Weibo:
 
     def __init__(self):
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
+
+        os.makedirs(os.path.join(self.BASE_DIR, 'db'), exist_ok=True)
+
+        db_file_path = os.path.join(self.BASE_DIR, 'db', 'weibo.db')
+        if not os.path.exists(db_file_path):
+            print("SQLite database file does not exist. Checking out from repository...")
+            os.system("git clone https://github.com/7755919/Girls-Frontline-weibo.git /tmp/repository")
+            os.makedirs(os.path.dirname(db_file_path), exist_ok=True)
+            os.system(f"cp /tmp/repository/db/weibo.db {db_file_path}")
         config = configparser.ConfigParser()
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
         self.WEIBO_ID = config.get("CONFIG", "WEIBO_ID")
