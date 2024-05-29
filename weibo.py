@@ -30,17 +30,20 @@ class Weibo:
         # Get secrets from environment variables
         config = configparser.ConfigParser()
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
-
+        
         proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {"http": proxy, "https": proxy}
+        self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
 
+        
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
         self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-        self.PROXY = config.get("CONFIG", "PROXY")
+        proxy = config.get("CONFIG", "PROXY")
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
+
+        self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
 
         # Debugging lines to check if environment variables are loaded correctly
         print(f"WEIBO_ID: {self.WEIBO_ID}")
