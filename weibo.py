@@ -48,7 +48,7 @@ class Weibo:
         print(f"WEIBO_ID: {self.WEIBO_ID}")
         print(f"TELEGRAM_BOT_TOKEN: {self.TELEGRAM_BOT_TOKEN}")
         print(f"TELEGRAM_CHAT_ID: {self.TELEGRAM_CHAT_ID}")
-        print(f"PROXY: {self.PROXY}")
+        print(f"PROXY: {proxy}")
 
     def send_telegram_message(self, text, weibo_link):
         """
