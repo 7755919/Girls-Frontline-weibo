@@ -32,13 +32,14 @@ class Weibo:
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
         
         proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {"http": proxy, "https": proxy}
+        PROXIES = {"http": proxy, "https": proxy}
 
         
-        self.WEIBO_ID = os.environ.get("WEIBO_ID")
-        self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-        self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+        WEIBO_ID = os.environ.get("WEIBO_ID")
+        TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+        TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
         proxy = config.get("CONFIG", "PROXY")
+
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # Increase retry attempts
         self.SESSION.keep_alive = False  # Close additional connections
