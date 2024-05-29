@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 # 将项目根目录添加到Python路径中
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from weibo import Weibo
+from tests.weibo import Weibo
 
 class TestWeibo(unittest.TestCase):
     @patch('weibo.Weibo.SESSION.get')
