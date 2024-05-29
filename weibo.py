@@ -17,15 +17,17 @@ class Weibo:
 
     def __init__(self):
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
-
+        # Ensure the 'db' directory exists
         os.makedirs(os.path.join(self.BASE_DIR, 'db'), exist_ok=True)
-
+        # Check out the SQLite database file from the repository
         db_file_path = os.path.join(self.BASE_DIR, 'db', 'weibo.db')
         if not os.path.exists(db_file_path):
             print("SQLite database file does not exist. Checking out from repository...")
-            os.system("git clone https://github.com/7755919/Girls-Frontline-weibo.git /tmp/repository")
+            os.system("git clone https://github.com/your_username/your_repository.git /tmp/repository")
             os.makedirs(os.path.dirname(db_file_path), exist_ok=True)
             os.system(f"cp /tmp/repository/db/weibo.db {db_file_path}")
+
+        # Get secrets from environment variables
         self.WEIBO_ID = os.environ.get("WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
         self.TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
@@ -35,6 +37,12 @@ class Weibo:
         self.SESSION.keep_alive = False  # Close additional connections
 
         self.PROXIES = {"http": self.PROXY, "https": self.PROXY}
+
+        # Debugging lines to check if environment variables are loaded correctly
+        print(f"WEIBO_ID: {self.WEIBO_ID}")
+        print(f"TELEGRAM_BOT_TOKEN: {self.TELEGRAM_BOT_TOKEN}")
+        print(f"TELEGRAM_CHAT_ID: {self.TELEGRAM_CHAT_ID}")
+        print(f"PROXY: {self.PROXY}")
 
     def send_telegram_message(self, text, weibo_link):
         """
