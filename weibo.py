@@ -27,7 +27,7 @@ class Weibo:
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # 增加重連次數
         self.SESSION.keep_alive = False  # 關閉多余連接
         proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {self.PROXIES}
+        self.PROXIES = {"http": proxy, "https": proxy}
 
     def send_telegram_message(self, text, weibo_link):
         """
