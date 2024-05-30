@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: read
+
 env:
   ASPNETCORE_ENVIRONMENT: ${{secrets.ENV}} # 运行环境
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -13,8 +16,7 @@ env:
   WEIBO_ID: ${{ secrets.WEIBO_ID }}
   PROXY: ${{ secrets.PROXY }}
 
-permissions:
-  contents: read
+
 
 jobs:
   build:
