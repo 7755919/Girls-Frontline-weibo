@@ -78,7 +78,7 @@ class Weibo:
         """
         检查当前微博是否已处理过，如果没处理过则发送博文以及配图到 Telegram
         """
-        weibo_data_file = os.path.join(self.BASE_DIR, 'json', 'weibo_data.json')
+        weibo_data_file = os.path.join(self.BASE_DIR, 'json_data', 'weibo_data.json')
 
         # 检查是否已处理过该微博
         if not os.path.exists(weibo_data_file):
