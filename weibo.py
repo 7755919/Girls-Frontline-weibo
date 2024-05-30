@@ -110,7 +110,7 @@ class Weibo:
                 # 保存图片到本地
                 for pic in weibo['pics']:
                     filename = pic.split('/')[-1].split('?')[0]
-                    filename = os.path       .join(self.BASE_DIR, 'images', filename)
+                    filename = os.path.join(self.BASE_DIR, 'images', filename)
                     wget.download(pic, out=filename)
 
                 # 将已处理的微博链接保存到JSON文件中
