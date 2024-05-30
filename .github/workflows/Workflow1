@@ -1,4 +1,4 @@
-name: Python application
+name: Workflow1
 
 on:
   push:
