@@ -74,55 +74,54 @@ class Weibo:
             for pic in pics:
                 self.send_telegram_photo(pic)
 
-    def parse_weibo(self, weibo):
+    def parse_weibo(self, weibos):
         """
         检查当前微博是否已处理过，如果没处理过则发送博文以及配图到 Telegram
         """
         weibo_data_file = os.path.join(self.BASE_DIR, 'json_data', 'weibo_data.json')
 
-        # 检查是否已处理过该微博
+        # 检查是否已处理过的微博链接列表
         if not os.path.exists(weibo_data_file):
             processed_weibos = []
         else:
             with open(weibo_data_file, 'r') as f:
                 processed_weibos = json.load(f)
 
-        if weibo['link'] not in processed_weibos:
-            self.send_telegram_message(
-                '{}@{}:{}'.format(
-                    f"[{len(weibo['pics'])}图] " if weibo['pics'] else '',
-                    weibo['nickname'],
-                    weibo['title'],
-                ),
-                weibo['link']
-            )
+        for weibo in weibos:
+            if weibo['link'] not in processed_weibos:
+                self.send_telegram_message(
+                    '{}@{}:{}'.format(
+                        f"[{len(weibo['pics'])}图] " if weibo['pics'] else '',
+                        weibo['nickname'],
+                        weibo['title'],
+                    ),
+                    weibo['link']
+                )
 
-            # 将图片URL发送到Telegram中
-            pics = weibo['pics']
-            if len(pics) > 0:
-                if len(pics) <= 2:
-                    for pic in pics:
-                        self.send_telegram_photo(pic)
-                elif len(pics) > 10:
-                    self.send_telegram_photos(pics[0 : int(len(pics)/2)])
-                    self.send_telegram_photos(pics[int(len(pics)/2):])
-                else:
-                    self.send_telegram_photos(pics)
+                # 发送图片到Telegram
+                pics = weibo['pics']
+                if len(pics) > 0:
+                    if len(pics) <= 2:
+                        for pic in pics:
+                            self.send_telegram_photo(pic)
+                    elif len(pics) > 10:
+                        self.send_telegram_photos(pics[0 : int(len(pics)/2)])
+                        self.send_telegram_photos(pics[int(len(pics)/2):])
+                    else:
+                        self.send_telegram_photos(pics)
 
-            # 将图片保存到本地
-            for pic in weibo['pics']:
-                filename = pic.split('/')[-1].split('?')[0]
-                filename = os.path.join(self.BASE_DIR, 'images', filename)
-                wget.download(pic, out=filename)
+                # 保存图片到本地
+                for pic in weibo['pics']:
+                    filename = pic.split('/')[-1].split('?')[0]
+                    filename = os.path.join(self.BASE_DIR, 'images', filename)
+                    wget.download(pic, out=filename)
 
-            # 将已处理的微博链接保存到JSON文件中
-            processed_weibos.append(weibo['link'])
-            with open(weibo_data_file, 'w') as f:
-                json.dump(processed_weibos, f)
+                # 将已处理的微博链接保存到JSON文件中
+                processed_weibos.append(weibo['link'])
 
-            return True
-        else:
-            return False
+        # 将已处理的微博链接列表保存回JSON文件中
+        with open(weibo_data_file, 'w') as f:
+            json.dump(processed_weibos, f)
 
     def test(self):
         print('* 正在檢查微博ID是否配置正確')
@@ -163,47 +162,40 @@ class Weibo:
         )
 
     def run(self):
-        self.plog('開始運行>>>')
+        self.plog('开始运行>>>')
 
         weibo_ids = self.WEIBO_ID.split(',')
         for weibo_id in weibo_ids:
-            self.plog(f'    |-開始獲取 {weibo_id} 的微博')
+            self.plog(f'    |-开始获取 {weibo_id} 的微博')
             url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
 
             try:
                 weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
             except:
-                self.plog('    |-訪問url出錯了')
+                self.plog('    |-访问URL出错了')
 
+            weibos = []  # 存储获取到的所有微博信息
             for item in weibo_items:
                 weibo = {}
                 try:
-                    if item['mblog']['isLongText']: # 如果博文包含全文 則去解析完整微博
-                        self.get_weibo_detail(item['mblog']['bid'])
-                        continue
-                except:
+                    if item['mblog']['isLongText']:
+                        # 如果博文包含全文则获取完整微博信息
+                        weibo = self.get_weibo_detail(item['mblog']['bid'])
+                    else:
+                        weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
+                        weibo['nickname'] = item['mblog']['user']['screen_name']
+                        weibo['pics'] = [pic['large']['url'] for pic in item['mblog'].get('pics', [])]
+                        weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
+                except Exception as e:
+                    self.plog(f"    |-处理微博出错: {str(e)}")
                     continue
 
-                weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
-                weibo['nickname'] = item['mblog']['user']['screen_name']
+                weibos.append(weibo)
 
-                if item['mblog'].get('weibo_position') == 3:  # 如果狀態為3表示轉發微博，附加上轉發鏈，狀態1為原創微博
-                    retweet = item['mblog']['retweeted_status']
-                    try:
-                        weibo['title'] = f"{weibo['title']}//@{retweet['user']['screen_name']}:{retweet['raw_text']}"
-                    except:
-                        weibo['title'] = f"{weibo['title']}//轉發原文不可見，可能已被刪除"
+            self.parse_weibo(weibos)  # 将获取到的微博信息列表传递给parse_weibo方法
+            self.plog(f'    |-获取结束 {weibo_id} 的微博')
 
-                try:
-                    weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
-                except:
-                    weibo['pics'] = []
-
-                weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
-
-                self.parse_weibo(weibo)
-            self.plog(f'    |-獲取結束 {weibo_id} 的微博')
-        self.plog('<<<運行結束\n')
+        self.plog('<<<运行结束\n')
 
 
 if __name__ == '__main__':
