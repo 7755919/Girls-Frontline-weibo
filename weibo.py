@@ -74,56 +74,87 @@ class Weibo:
             for pic in pics:
                 self.send_telegram_photo(pic)
 
+class WeiboHandler:
+    def __init__(self, base_dir):
+        self.BASE_DIR = base_dir
+        self.json_file_path = os.path.join(self.BASE_DIR, 'weibo.json')
+
+        # 如果JSON文件不存在，创建一个空的JSON文件
+        if not os.path.exists(self.json_file_path):
+            with open(self.json_file_path, 'w') as f:
+                json.dump({"weibo": []}, f)
+
+    def send_telegram_message(self, message, link):
+        # 你的发送Telegram消息的实现
+        print(f"Send message: {message} with link: {link}")
+
+    def send_telegram_photo(self, photo):
+        # 你的发送单张Telegram图片的实现
+        print(f"Send photo: {photo}")
+
+    def send_telegram_photos(self, photos):
+        # 你的发送多张Telegram图片的实现
+        print(f"Send photos: {photos}")
+
     def parse_weibo(self, weibo):
         """
-        檢查當前微博是否已處理過，如果沒處理過則發送博文以及配圖到Telegram
+        检查当前微博是否已处理过，如果没处理过则发送博文以及配图到Telegram
         """
-        conn = sqlite3.connect(os.path.join(self.BASE_DIR, 'db', 'weibo.db'))
-        cursor = conn.cursor()
+        with open(self.json_file_path, 'r') as f:
+            data = json.load(f)
 
-        sql = "SELECT COUNT(id) AS counts FROM weibo WHERE link = ?"
-        cursor.execute(sql, (weibo['link'],))
-        result = cursor.fetchone()
-
-        if result[0] <= 0:
+        # 检查微博是否已处理过
+        if not any(entry['link'] == weibo['link'] for entry in data['weibo']):
             self.send_telegram_message(
                 '{}@{}:{}'.format(
-                    f"[{len(weibo['pics'])}圖] " if weibo['pics'] else '',
+                    f"[{len(weibo['pics'])}图] " if weibo['pics'] else '',
                     weibo['nickname'],
                     weibo['title'],
                 ),
                 weibo['link']
             )
 
-            # 把圖片url發送到Telegram中，可以第一時間在Telegram中收到推送
+            # 把图片URL发送到Telegram中，可以第一时间在Telegram中收到推送
             pics = weibo['pics']
             if len(pics) > 0:
-                if len(pics) <= 2: # 如果配圖小於2張 則一張一張獨立發送
+                if len(pics) <= 2:  # 如果配图少于2张，则一张一张独立发送
                     for pic in pics:
-                        self.send_telegram_photo(pics)
-                elif len(pics) > 10: # 如果配圖大於10張 則分2組發送
-                    self.send_telegram_photos(pics[0 : int(len(pics)/2)])
-                    self.send_telegram_photos(pics[int(len(pics)/2):])
+                        self.send_telegram_photo(pic)
+                elif len(pics) > 10:  # 如果配图多于10张，则分2组发送
+                    self.send_telegram_photos(pics[0: int(len(pics) / 2)])
+                    self.send_telegram_photos(pics[int(len(pics) / 2):])
                 else:
                     self.send_telegram_photos(pics)
 
-            # 配圖發送到Telegram畢後，將配圖獨立保存到本地一份
+            # 配图发送到Telegram后，将配图独立保存到本地一份
             for pic in weibo['pics']:
                 filename = pic.split('/')[-1].split('?')[0]
                 filename = os.path.join(self.BASE_DIR, 'images', filename)
                 wget.download(pic, out=filename)
 
-            sql = "INSERT INTO weibo(summary, link) VALUES(?, ?)"
-            cursor.execute(sql, (
-                weibo['title'],
-                weibo['link'],
-            ))
-            conn.commit()
-            conn.close()
+            # 更新JSON文件，记录新的微博
+            data['weibo'].append({
+                'summary': weibo['title'],
+                'link': weibo['link']
+            })
+            with open(self.json_file_path, 'w') as f:
+                json.dump(data, f, indent=2)
 
             return True
         else:
             return False
+
+# 示例使用
+base_dir = '/path/to/your/base/dir'
+weibo_handler = WeiboHandler(base_dir)
+weibo_data = {
+    'title': '新微博内容',
+    'link': 'https://example.com/new_weibo',
+    'nickname': '微博昵称',
+    'pics': ['https://example.com/image1.jpg', 'https://example.com/image2.jpg']
+}
+weibo_handler.parse_weibo(weibo_data)
+
 
     def test(self):
         print('* 正在檢查微博ID是否配置正確')
