@@ -173,6 +173,7 @@ class Weibo:
                 weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
             except:
                 self.plog('    |-访问URL出错了')
+                continue
 
             weibos = []  # 存储获取到的所有微博信息
             for item in weibo_items:
