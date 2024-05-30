@@ -12,10 +12,12 @@ WEIBO_ID = os.environ.get("WEIBO_ID")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-class Weibo:
-
     def plog(self,content):
         print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())), content))
+
+
+
+class Weibo:
 
     def __init__(self):
 
