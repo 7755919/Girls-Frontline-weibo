@@ -133,7 +133,8 @@ class WeiboHandler:
 
             # 更新JSON文件，记录新的微博
             data['weibo'].append({
-                'summary': weibo['title'link': weibo['link']
+                'summary': weibo['title'],
+                'link': weibo['link']
             })
             with open(self.json_file_path, 'w') as f:
                 json.dump(data, f, indent=2)
