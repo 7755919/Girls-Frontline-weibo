@@ -43,3 +43,6 @@ jobs:
 
     - name: Run Python Script
       run: python weibo.py
+
+    - name: Update JSON file
+      run: python update_json.py
