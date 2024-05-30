@@ -12,8 +12,14 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 class Weibo:
+   
+
+
+    def plog(self,content):
+        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())), content))
 
     def __init__(self):
+
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
         config = configparser.ConfigParser()
         config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
@@ -26,19 +32,6 @@ class Weibo:
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # 增加重连次数
         self.SESSION.keep_alive = False  # 关闭多余连接
-        proxy = config.get("CONFIG", "PROXY")
-        self.PROXIES = {"http": proxy, "https": proxy}
-
-    def __init__(self):
-        self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
-        config = configparser.ConfigParser()
-        config.read(os.path.join(self.BASE_DIR, 'config.ini'), encoding='utf-8')
-
-
-
-        self.SESSION = HTMLSession()
-        self.SESSION.adapters.DEFAULT_RETRIES = 5  # 增加重連次數
-        self.SESSION.keep_alive = False  # 關閉多余連接
         proxy = config.get("CONFIG", "PROXY")
         self.PROXIES = {"http": proxy, "https": proxy}
 
