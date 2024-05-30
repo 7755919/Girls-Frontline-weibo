@@ -7,13 +7,12 @@ import sqlite3
 import configparser
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
+
 WEIBO_ID = os.environ.get("WEIBO_ID")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 class Weibo:
-   
-
 
     def plog(self,content):
         print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())), content))
@@ -143,18 +142,6 @@ class WeiboHandler:
             return True
         else:
             return False
-
-# 示例使用
-base_dir = '/path/to/your/base/dir'
-weibo_handler = WeiboHandler(base_dir)
-weibo_data = {
-    'title': '新微博内容',
-    'link': 'https://example.com/new_weibo',
-    'nickname': '微博昵称',
-    'pics': ['https://example.com/image1.jpg', 'https://example.com/image2.jpg']
-}
-weibo_handler.parse_weibo(weibo_data)
-
 
     def test(self):
         print('* 正在檢查微博ID是否配置正確')
