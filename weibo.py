@@ -7,12 +7,16 @@ import sqlite3
 import configparser
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
-
 WEIBO_ID = os.environ.get("WEIBO_ID")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 class Weibo:
+   
+
+
+    def plog(self,content):
+        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())), content))
 
     def __init__(self):
 
@@ -70,40 +74,20 @@ class Weibo:
             for pic in pics:
                 self.send_telegram_photo(pic)
 
-class WeiboHandler:
-    def __init__(self, base_dir):
-        self.BASE_DIR = base_dir
-        self.json_file_path = os.path.join(self.BASE_DIR, 'weibo.json')
-
-        # 如果JSON文件不存在，创建一个空的JSON文件
-        if not os.path.exists(self.json_file_path):
-            with open(self.json_file_path, 'w') as f:
-                json.dump({"weibo": []}, f)
-
-    def plog(self, content):
-        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
-
-    def send_telegram_message(self, message, link):
-        # 你的发送Telegram消息的实现
-        print(f"Send message: {message} with link: {link}")
-
-    def send_telegram_photo(self, photo):
-        # 你的发送单张Telegram图片的实现
-        print(f"Send photo: {photo}")
-
-    def send_telegram_photos(self, photos):
-        # 你的发送多张Telegram图片的实现
-        print(f"Send photos: {photos}")
-
     def parse_weibo(self, weibo):
         """
-        检查当前微博是否已处理过，如果没处理过则发送博文以及配图到Telegram
+        检查当前微博是否已处理过，如果没处理过则发送博文以及配图到 Telegram
         """
-        with open(self.json_file_path, 'r') as f:
-            data = json.load(f)
+        weibo_data_file = os.path.join(self.BASE_DIR, 'json', 'weibo_data.json')
 
-        # 检查微博是否已处理过
-        if not any(entry['link'] == weibo['link'] for entry in data['weibo']):
+        # 检查是否已处理过该微博
+        if not os.path.exists(weibo_data_file):
+            processed_weibos = []
+        else:
+            with open(weibo_data_file, 'r') as f:
+                processed_weibos = json.load(f)
+
+        if weibo['link'] not in processed_weibos:
             self.send_telegram_message(
                 '{}@{}:{}'.format(
                     f"[{len(weibo['pics'])}图] " if weibo['pics'] else '',
@@ -113,31 +97,28 @@ class WeiboHandler:
                 weibo['link']
             )
 
-            # 把图片URL发送到Telegram中，可以第一时间在Telegram中收到推送
+            # 将图片URL发送到Telegram中
             pics = weibo['pics']
             if len(pics) > 0:
-                if len(pics) <= 2:  # 如果配图少于2张，则一张一张独立发送
+                if len(pics) <= 2:
                     for pic in pics:
                         self.send_telegram_photo(pic)
-                elif len(pics) > 10:  # 如果配图多于10张，则分2组发送
-                    self.send_telegram_photos(pics[0: int(len(pics) / 2)])
-                    self.send_telegram_photos(pics[int(len(pics) / 2):])
+                elif len(pics) > 10:
+                    self.send_telegram_photos(pics[0 : int(len(pics)/2)])
+                    self.send_telegram_photos(pics[int(len(pics)/2):])
                 else:
                     self.send_telegram_photos(pics)
 
-            # 配图发送到Telegram后，将配图独立保存到本地一份
+            # 将图片保存到本地
             for pic in weibo['pics']:
                 filename = pic.split('/')[-1].split('?')[0]
                 filename = os.path.join(self.BASE_DIR, 'images', filename)
                 wget.download(pic, out=filename)
 
-            # 更新JSON文件，记录新的微博
-            data['weibo'].append({
-                'summary': weibo['title'],
-                'link': weibo['link']
-            })
-            with open(self.json_file_path, 'w') as f:
-                json.dump(data, f, indent=2)
+            # 将已处理的微博链接保存到JSON文件中
+            processed_weibos.append(weibo['link'])
+            with open(weibo_data_file, 'w') as f:
+                json.dump(processed_weibos, f)
 
             return True
         else:
@@ -145,10 +126,10 @@ class WeiboHandler:
 
     def test(self):
         print('* 正在檢查微博ID是否配置正確')
-        url = f'https://m.weibo.cn/api/container/getIndex?containerid=100505{WEIBO_ID}'
+        url = f'https://m.weibo.cn/api/container/getIndex?containerid=100505{self.WEIBO_ID}'
         try:
             weibo_name = self.SESSION.get(url).json()['data']['userInfo']['screen_name']
-            print(f'* 正確】當前設置的微博賬戶為：@{weibo_name}')
+            print(f'【正確】當前設置的微博賬戶為：@{weibo_name}')
         except:
             print('【錯誤】請重新測試或檢查微博數字ID是否正確')
 
@@ -184,7 +165,7 @@ class WeiboHandler:
     def run(self):
         self.plog('開始運行>>>')
 
-        weibo_ids = WEIBO_ID.split(',')
+        weibo_ids = self.WEIBO_ID.split(',')
         for weibo_id in weibo_ids:
             self.plog(f'    |-開始獲取 {weibo_id} 的微博')
             url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
@@ -226,9 +207,9 @@ class WeiboHandler:
 
 
 if __name__ == '__main__':
-    weibo_handler = WeiboHandler(os.path.dirname(os.path.realpath(__file__)))
+    weibo = Weibo()
     argv = sys.argv[1] if len(sys.argv) > 1 else ''
     if argv.lower() == 'test':
-        weibo_handler.test()
+        weibo.test()
     else:
-        weibo_handler.run()
+        weibo.run()
