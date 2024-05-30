@@ -1,0 +1,36 @@
+name: Workflow2
+on:
+  workflow_dispatch:
+jobs:
+  my_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Step 1
+        run: echo "This is step 1 of Workflow2"
+      - name: Step 2 (Uses Secret)
+        run: echo "This is step 2 of Workflow2, and I'm using a secret: ${{ secrets.YOUR_SECRET_NAME }}"
+      # Add more steps if needed
+    build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' # 你想要使用的 Python 版本
+        
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install lxml_html_clean
+
+    - name: Run Python Script
+      env:
+        Telegram_Bot_Token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        Telegram_Chat_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        Weibo_ID: ${{ secrets.WEIBO_ID }}
+        Proxy: ${{ secrets.PROXY }}
+      run: python weibo.py
