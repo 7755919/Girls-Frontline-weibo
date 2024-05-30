@@ -1,8 +1,11 @@
-import os
+import sys
+import OS
 import json
 
-# 获取传递的已处理微博链接列表
-processed_weibos_str = os.environ.get('processed_weibos')
+# 获取传递的已处理微博链接列表的 JSON 字符串
+processed_weibos_str = os.getenv("processed_weibos")
+
+# 将 JSON 字符串解析为列表
 processed_weibos = json.loads(processed_weibos_str)
 
 # 定义要更新的 JSON 文件路径
