@@ -1,6 +1,16 @@
-on:
-  pull_request_target:
+name: run_weibo
 
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  Telegram_Bot_Token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  Telegram_Chat_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  Weibo_ID: ${{ secrets.WEIBO_ID }}
+  Proxy: ${{ secrets.PROXY }}
 
 permissions:
   contents: read
@@ -26,9 +36,4 @@ jobs:
         pip install lxml_html_clean
 
     - name: Run Python Script
-      env:
-        Telegram_Bot_Token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        Telegram_Chat_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        Weibo_ID: ${{ secrets.WEIBO_ID }}
-        Proxy: ${{ secrets.PROXY }}
       run: python weibo.py
