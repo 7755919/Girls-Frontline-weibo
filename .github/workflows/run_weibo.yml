@@ -47,4 +47,4 @@ jobs:
     - name: Update JSON file
       run: python update_json.py
       env:
-        processed_weibos: ${{ toJson(processed_weibos) }}
+        processed_weibos: ${{ toJson(processed_weibos_str) }}
