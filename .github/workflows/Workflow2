@@ -8,7 +8,7 @@ jobs:
       - name: Step 1
         run: echo "This is step 1 of Workflow2"
       - name: Step 2 (Uses Secret)
-        run: echo "This is step 2 of Workflow2, and I'm using a secret: ${{ secrets.YOUR_SECRET_NAME }}"
+        run: echo "This is step 2 of Workflow2, and I'm using a secrets: ${{ secrets.WEIBO_ID }}, ${{ secrets.TELEGRAM_BOT_TOKEN }}, ${{ secrets.TELEGRAM_CHAT_ID }}"
       # Add more steps if needed
     build:
     runs-on: ubuntu-latest
