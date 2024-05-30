@@ -1,10 +1,6 @@
-name: Run Weibo Script
-
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  pull_request_target:
+
 
 permissions:
   contents: read
@@ -15,8 +11,10 @@ jobs:
     
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
-      
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
