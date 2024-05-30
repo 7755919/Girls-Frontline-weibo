@@ -14,9 +14,6 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 class Weibo:
 
-    def plog(self, content):
-        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
-
     def __init__(self):
 
         self.BASE_DIR = os.path.split(os.path.realpath(__file__))[0]
@@ -83,6 +80,9 @@ class WeiboHandler:
             with open(self.json_file_path, 'w') as f:
                 json.dump({"weibo": []}, f)
 
+    def plog(self, content):
+        print('{} {}'.format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), content))
+
     def send_telegram_message(self, message, link):
         # 你的发送Telegram消息的实现
         print(f"Send message: {message} with link: {link}")
@@ -133,8 +133,7 @@ class WeiboHandler:
 
             # 更新JSON文件，记录新的微博
             data['weibo'].append({
-                'summary': weibo['title'],
-                'link': weibo['link']
+                'summary': weibo['title'link': weibo['link']
             })
             with open(self.json_file_path, 'w') as f:
                 json.dump(data, f, indent=2)
