@@ -42,4 +42,4 @@ jobs:
         pip install lxml_html_clean
 
     - name: Run Python Script
-      run: python tests/test_secrets.py
+      run: python weibo.py
