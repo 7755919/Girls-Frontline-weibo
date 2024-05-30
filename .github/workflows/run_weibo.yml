@@ -37,6 +37,7 @@ jobs:
         
     - name: Install Dependencies
       run: |
+        pip install --upgrade pip setuptools
         pip install -r requirements.txt
         pip install lxml_html_clean
 
