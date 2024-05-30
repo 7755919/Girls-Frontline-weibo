@@ -1,5 +1,5 @@
 import sys
-import OS
+import os
 import json
 
 # 获取传递的已处理微博链接列表的 JSON 字符串
