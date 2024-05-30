@@ -21,7 +21,7 @@ class Weibo:
 
         self.WEIBO_ID = os.environ.get("self.WEIBO_ID")
         self.TELEGRAM_BOT_TOKEN = os.environ.get("self.TELEGRAM_BOT_TOKEN")
-        self.TELEGRAM_CHAT_ID = os.environ.get("CONFIG", "self.TELEGRAM_CHAT_ID")
+        self.TELEGRAM_CHAT_ID = os.environ.get("self.TELEGRAM_CHAT_ID")
 
         self.SESSION = HTMLSession()
         self.SESSION.adapters.DEFAULT_RETRIES = 5  # 增加重連次數
