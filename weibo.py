@@ -181,50 +181,6 @@ class WeiboHandler:
             uri = bid
         )
 
-    def run(self):
-        self.plog('開始運行>>>')
-
-        weibo_ids = self.WEIBO_ID.split(',')
-        for weibo_id in weibo_ids:
-            self.plog(f'    |-開始獲取 {weibo_id} 的微博')
-            url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
-
-            try:
-                weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
-            except:
-                self.plog('    |-訪問url出錯了')
-
-            for item in weibo_items:
-                weibo = {}
-                try:
-                    if item['mblog']['isLongText']: # 如果博文包含全文 則去解析完整微博
-                        self.get_weibo_detail(item['mblog']['bid'])
-                        continue
-                except:
-                    continue
-
-                weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
-                weibo['nickname'] = item['mblog']['user']['screen_name']
-
-                if item['mblog'].get('weibo_position') == 3:  # 如果狀態為3表示轉發微博，附加上轉發鏈，狀態1為原創微博
-                    retweet = item['mblog']['retweeted_status']
-                    try:
-                        weibo['title'] = f"{weibo['title']}//@{retweet['user']['screen_name']}:{retweet['raw_text']}"
-                    except:
-                        weibo['title'] = f"{weibo['title']}//轉發原文不可見，可能已被刪除"
-
-                try:
-                    weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
-                except:
-                    weibo['pics'] = []
-
-                weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
-
-                self.parse_weibo(weibo)
-            self.plog(f'    |-獲取結束 {weibo_id} 的微博')
-        self.plog('<<<運行結束\n')
-
-
 if __name__ == '__main__':
     weibo = Weibo()
     argv = sys.argv[1] if len(sys.argv) > 1 else ''
