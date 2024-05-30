@@ -78,11 +78,14 @@ class Weibo:
         weibo_data_file = os.path.join(self.BASE_DIR, 'json_data', 'weibo_data.json')
 
         # 检查是否已处理过的微博链接列表
+    
         if not os.path.exists(weibo_data_file):
             processed_weibos = []
         else:
             with open(weibo_data_file, 'r') as f:
                 processed_weibos = json.load(f)
+                if not isinstance(processed_weibos, list):  # 确保processed_weibos是一个列表
+                        processed_weibos = []
 
         for weibo in weibos:
             if weibo['link'] not in processed_weibos:
