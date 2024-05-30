@@ -17,6 +17,7 @@ jobs:
           WEIBO_ID: ${{ secrets.WEIBO_ID }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: echo "Secrets are set"
       # Add more steps if needed
   trigger_next_workflow:
     runs-on: ubuntu-latest
