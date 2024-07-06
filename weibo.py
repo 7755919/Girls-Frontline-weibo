@@ -42,8 +42,8 @@ class Weibo:
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendMessage'
         try:
             self.SESSION.post(url, headers=headers, data=data.encode('utf-8'), proxies=self.PROXIES)
-        except Exception as e:
-            print(f'    |-網絡代理錯誤: {e}')
+        except:
+            print('    |-網絡代理錯誤，請檢查確認後關閉本程序重試')
             time.sleep(99999)
 
     def send_telegram_photo(self, img_url):
@@ -105,9 +105,8 @@ class Weibo:
         try:
             weibo_name = self.SESSION.get(url).json()['data']['userInfo']['screen_name']
             print(f'【正確】當前設置的微博賬戶為：@{weibo_name}')
-        except Exception as e:
-            print(f'【錯誤】檢查微博ID出現問題: {e}')
-        
+        except:
+            print('【錯誤】請重新測試或檢查微博數字ID是否正確')
         print('\n* 正在檢查代理是否配置正確')
         try:
             status_code = self.SESSION.get('https://www.google.com', proxies=self.PROXIES, timeout=5).status_code
@@ -115,8 +114,8 @@ class Weibo:
                 print('【正確】代理配置正確，可正常訪問')
             else:
                 print('【錯誤】代理無法訪問到TG服務器')
-        except Exception as e:
-            print(f'【錯誤】檢查代理出現問題: {e}')
+        except:
+            print('【錯誤】代理無法訪問到TG服務器')
 
     def get_weibo_detail(self, bid):
         url = f'https://m.weibo.cn/statuses/show?id={bid}'
@@ -142,9 +141,8 @@ class Weibo:
             url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
             try:
                 weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
-            except Exception as e:
-                self.plog(f'    |-訪問url出錯了: {e}')
-                continue
+            except:
+                self.plog('    |-訪問url出錯了')
             for item in weibo_items:
                 weibo = {}
                 try:
@@ -169,6 +167,9 @@ class Weibo:
                 self.parse_weibo(weibo)
             self.plog(f'    |-獲取結束 {weibo_id} 的微博')
         self.plog('運行結束>>>')
+        
+        # 更新數據庫
+        update_database()
 
 if __name__ == "__main__":
     weibo = Weibo()
