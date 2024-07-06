@@ -42,8 +42,8 @@ class Weibo:
         url = f'https://api.telegram.org/bot{self.TELEGRAM_BOT_TOKEN}/sendMessage'
         try:
             self.SESSION.post(url, headers=headers, data=data.encode('utf-8'), proxies=self.PROXIES)
-        except:
-            print('    |-網絡代理錯誤，請檢查確認後關閉本程序重試')
+        except Exception as e:
+            print(f'    |-網絡代理錯誤: {e}')
             time.sleep(99999)
 
     def send_telegram_photo(self, img_url):
@@ -105,8 +105,9 @@ class Weibo:
         try:
             weibo_name = self.SESSION.get(url).json()['data']['userInfo']['screen_name']
             print(f'【正確】當前設置的微博賬戶為：@{weibo_name}')
-        except:
-            print('【錯誤】請重新測試或檢查微博數字ID是否正確')
+        except Exception as e:
+            print(f'【錯誤】檢查微博ID出現問題: {e}')
+        
         print('\n* 正在檢查代理是否配置正確')
         try:
             status_code = self.SESSION.get('https://www.google.com', proxies=self.PROXIES, timeout=5).status_code
@@ -114,8 +115,8 @@ class Weibo:
                 print('【正確】代理配置正確，可正常訪問')
             else:
                 print('【錯誤】代理無法訪問到TG服務器')
-        except:
-            print('【錯誤】代理無法訪問到TG服務器')
+        except Exception as e:
+            print(f'【錯誤】檢查代理出現問題: {e}')
 
     def get_weibo_detail(self, bid):
         url = f'https://m.weibo.cn/statuses/show?id={bid}'
@@ -133,40 +134,41 @@ class Weibo:
     def get_pc_url(self, weibo_id, bid):
         return f'https://weibo.com/{weibo_id}/{bid}'
 
-def run(self):
-    self.plog('開始運行>>>')
-    weibo_ids = self.WEIBO_ID.split(',')
-    for weibo_id in weibo_ids:
-        self.plog(f'    |-開始獲取 {weibo_id} 的微博')
-        url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
-        try:
-            weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
-        except:
-            self.plog('    |-訪問url出錯了')
-        for item in weibo_items:
-            weibo = {}
+    def run(self):
+        self.plog('開始運行>>>')
+        weibo_ids = self.WEIBO_ID.split(',')
+        for weibo_id in weibo_ids:
+            self.plog(f'    |-開始獲取 {weibo_id} 的微博')
+            url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
             try:
-                if item['mblog']['isLongText']:
-                    self.get_weibo_detail(item['mblog']['bid'])
-                    continue
-            except:
+                weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
+            except Exception as e:
+                self.plog(f'    |-訪問url出錯了: {e}')
                 continue
-            weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
-            weibo['nickname'] = item['mblog']['user']['screen_name']
-            if item['mblog'].get('weibo_position') == 3:
-                retweet = item['mblog']['retweeted_status']
+            for item in weibo_items:
+                weibo = {}
                 try:
-                    weibo['title'] = f"{weibo['title']} //@{retweet['user']['screen_name']}:{retweet['raw_text']}"
+                    if item['mblog']['isLongText']:
+                        self.get_weibo_detail(item['mblog']['bid'])
+                        continue
                 except:
-                    weibo['title'] = f"{weibo['title']} //轉發原文不可見，可能已被刪除"
-            try:
-                weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
-            except:
-                weibo['pics'] = []
-            weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
-            self.parse_weibo(weibo)
-        self.plog(f'    |-獲取結束 {weibo_id} 的微博')
-    self.plog('運行結束>>>')
+                    continue
+                weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
+                weibo['nickname'] = item['mblog']['user']['screen_name']
+                if item['mblog'].get('weibo_position') == 3:
+                    retweet = item['mblog']['retweeted_status']
+                    try:
+                        weibo['title'] = f"{weibo['title']} //@{retweet['user']['screen_name']}:{retweet['raw_text']}"
+                    except:
+                        weibo['title'] = f"{weibo['title']} //轉發原文不可見，可能已被刪除"
+                try:
+                    weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
+                except:
+                    weibo['pics'] = []
+                weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
+                self.parse_weibo(weibo)
+            self.plog(f'    |-獲取結束 {weibo_id} 的微博')
+        self.plog('運行結束>>>')
 
 if __name__ == "__main__":
     weibo = Weibo()
