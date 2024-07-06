@@ -133,50 +133,40 @@ class Weibo:
     def get_pc_url(self, weibo_id, bid):
         return f'https://weibo.com/{weibo_id}/{bid}'
 
-    def run(self):
-        self.plog('開始運行>>>')
-        start_time = time.time()
-        while True:
-            current_time = time.time()
-            elapsed_time = current_time - start_time
-            if elapsed_time >= 86400:
-                break
-            self.plog(f'--- 第 {int(elapsed_time)} 秒 ---')
-            weibo_ids = self.WEIBO_ID.split(',')
-            for weibo_id in weibo_ids:
-                self.plog(f'    |-開始獲取 {weibo_id} 的微博')
-                url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
+def run(self):
+    self.plog('開始運行>>>')
+    weibo_ids = self.WEIBO_ID.split(',')
+    for weibo_id in weibo_ids:
+        self.plog(f'    |-開始獲取 {weibo_id} 的微博')
+        url = f'https://m.weibo.cn/api/container/getIndex?containerid=107603{weibo_id}'
+        try:
+            weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
+        except:
+            self.plog('    |-訪問url出錯了')
+        for item in weibo_items:
+            weibo = {}
+            try:
+                if item['mblog']['isLongText']:
+                    self.get_weibo_detail(item['mblog']['bid'])
+                    continue
+            except:
+                continue
+            weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
+            weibo['nickname'] = item['mblog']['user']['screen_name']
+            if item['mblog'].get('weibo_position') == 3:
+                retweet = item['mblog']['retweeted_status']
                 try:
-                    weibo_items = self.SESSION.get(url).json()['data']['cards'][::-1]
+                    weibo['title'] = f"{weibo['title']} //@{retweet['user']['screen_name']}:{retweet['raw_text']}"
                 except:
-                    self.plog('    |-訪問url出錯了')
-                for item in weibo_items:
-                    weibo = {}
-                    try:
-                        if item['mblog']['isLongText']:
-                            self.get_weibo_detail(item['mblog']['bid'])
-                            continue
-                    except:
-                        continue
-                    weibo['title'] = BeautifulSoup(item['mblog']['text'].replace('<br />', '\n'), 'html.parser').get_text()
-                    weibo['nickname'] = item['mblog']['user']['screen_name']
-                    if item['mblog'].get('weibo_position') == 3:
-                        retweet = item['mblog']['retweeted_status']
-                        try:
-                            weibo['title'] = f"{weibo['title']}//@{retweet['user']['screen_name']}:{retweet['raw_text']}"
-                        except:
-                            weibo['title'] = f"{weibo['title']}//轉發原文不可見，可能已被刪除"
-                    try:
-                        weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
-                    except:
-                        weibo['pics'] = []
-                    weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
-                    self.parse_weibo(weibo)
-                self.plog(f'    |-獲取結束 {weibo_id} 的微博')
-            self.plog('>>>檢查更新結束')
-            self.plog('>>>180 秒後再次檢查')
-            time.sleep(180)
-        self.plog('運行結束>>>')
+                    weibo['title'] = f"{weibo['title']} //轉發原文不可見，可能已被刪除"
+            try:
+                weibo['pics'] = [pic['large']['url'] for pic in item['mblog']['pics']]
+            except:
+                weibo['pics'] = []
+            weibo['link'] = self.get_pc_url(weibo_id, item['mblog']['bid'])
+            self.parse_weibo(weibo)
+        self.plog(f'    |-獲取結束 {weibo_id} 的微博')
+    self.plog('運行結束>>>')
 
 if __name__ == "__main__":
     weibo = Weibo()
