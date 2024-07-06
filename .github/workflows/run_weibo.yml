@@ -45,6 +45,4 @@ jobs:
       run: python weibo.py
 
     - name: Update JSON file
-      run: python update_json.py
-      env:
-        processed_weibos: ${{ toJson(processed_weibos_str) }}
+      run: python update_sql.py
