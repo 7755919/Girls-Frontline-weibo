@@ -15,7 +15,7 @@ class Weibo:
         db_file_path = os.path.join(self.BASE_DIR, 'db', 'weibo.db')
         if not os.path.exists(db_file_path):
             print("SQLite database file does not exist. Checking out from repository...")
-            os.system("git clone https://github.com/your_username/your_repository.git /tmp/repository")
+            os.system("git clone https://github.com/7755919/Girls-Frontline-weibo.git /tmp/repository")
             os.makedirs(os.path.dirname(db_file_path), exist_ok=True)
             os.system(f"cp /tmp/repository/db/weibo.db {db_file_path}")
 
