@@ -167,9 +167,20 @@ class Weibo:
                 self.parse_weibo(weibo)
             self.plog(f'    |-獲取結束 {weibo_id} 的微博')
         self.plog('運行結束>>>')
-        
-        # 更新數據庫
-        update_database()
+
+        # 在這裡調用更新數據庫的函數
+        self.update_database()
+
+    def update_database(self):
+        conn = sqlite3.connect(os.path.join(self.BASE_DIR, 'db', 'weibo.db'))
+        cursor = conn.cursor()
+
+        # 示例更新語句，可以根據需要修改
+        sql = "UPDATE weibo SET summary = ? WHERE link = ?"
+        cursor.execute(sql, ('Updated summary', 'http://example.com'))
+
+        conn.commit()
+        conn.close()
 
 if __name__ == "__main__":
     weibo = Weibo()
